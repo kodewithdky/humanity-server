@@ -1,12 +1,9 @@
 import { Router } from "express";
 import {
    addAvatar,
-   addCoverImage,
    changeUserPassword,
    deleteAvatar,
-   deleteCoverImage,
    updateAccountDetails,
-   updateCoverImage,
    updateAvatar,
 } from "../controllers/user.controllers.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -29,21 +26,6 @@ router.route("/add-avatar").post(
    verifyJWT,
    addAvatar
 );
-//aad cover image
-router.route("/add-cover-image").post(
-   upload.fields([
-      {
-         name: "coverImage",
-         maxCount: 1,
-      },
-   ]),
-   verifyJWT,
-   addCoverImage
-);
-//delete avatar
-router.route("/delete-avatar").delete(verifyJWT, deleteAvatar);
-//delete cover image
-router.route("/delete-cover-image").delete(verifyJWT, deleteCoverImage);
 //update avater
 router.route("/update-avatar").put(
    upload.fields([
@@ -55,16 +37,7 @@ router.route("/update-avatar").put(
    verifyJWT,
    updateAvatar
 );
-//update cover image
-router.route("/update-cover-image").put(
-   upload.fields([
-      {
-         name: "coverImage",
-         maxCount: 1,
-      },
-   ]),
-   verifyJWT,
-   updateCoverImage
-);
+//delete avatar
+router.route("/delete-avatar").delete(verifyJWT, deleteAvatar);
 
 export default router;

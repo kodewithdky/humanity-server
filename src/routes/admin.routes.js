@@ -2,10 +2,12 @@ import { Router } from "express";
 import {
    changePrivlage,
    deleteUser,
+   deleteVolunteer,
    exportExcel,
+   getPayments,
    getUsers,
-   getVolunteerDetails,
    getVolunteers,
+   updateVolunteerDetails,
 } from "../controllers/admin.controllers.js";
 import { isAdmin, verifyJWT } from "../middlewares/auth.middleware.js";
 //express router
@@ -15,14 +17,20 @@ const router = Router();
 router.route("/get-users").get(verifyJWT, isAdmin, getUsers);
 //get volunteer
 router.route("/get-volunteers").get(verifyJWT, isAdmin, getVolunteers);
-//get volunteer details
+//update volunteer details
 router
-   .route("/get-volunteer-details/:id")
-   .get(verifyJWT, isAdmin, getVolunteerDetails);
+   .route("/update-volunteer-details/:id")
+   .put(verifyJWT, isAdmin, updateVolunteerDetails);
+//get payments
+router.route("/get-payments").get(verifyJWT, isAdmin, getPayments);
 // delete user
 router.route("/delete-user/:id").delete(verifyJWT, isAdmin, deleteUser);
+// delete user with volunteer
+router
+   .route("/delete-user-volunteer/:id")
+   .delete(verifyJWT, isAdmin, deleteVolunteer);
 //change user privilage
-router.route("/change-privilage/:id").post(verifyJWT, isAdmin, changePrivlage);
+router.route("/change-privilage/:id").put(verifyJWT, isAdmin, changePrivlage);
 //export excel
 router.route("/export-user").get(verifyJWT, isAdmin, exportExcel);
 

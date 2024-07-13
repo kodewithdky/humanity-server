@@ -21,10 +21,6 @@ router.route("/sign-up").post(
          name: "avatar",
          maxCount: 1,
       },
-      {
-         name: "coverImage",
-         maxCount: 1,
-      },
    ]),
    signup
 );

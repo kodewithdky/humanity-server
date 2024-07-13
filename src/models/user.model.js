@@ -4,6 +4,9 @@ import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema(
    {
+      socialId: {
+         type: String,
+      },
       name: {
          type: String,
          required: true,
@@ -19,19 +22,19 @@ const userSchema = new mongoose.Schema(
       phone: {
          type: String,
          unique: true,
-         required: true,
          trim: true,
       },
       gender: {
          type: String,
-         required: true,
          trim: true,
       },
       avatar: {
-         type: String,
-      },
-      coverImage: {
-         type: String,
+         public_id: {
+            type: String,
+         },
+         url: {
+            type: String,
+         },
       },
       is_admin: {
          type: Number,

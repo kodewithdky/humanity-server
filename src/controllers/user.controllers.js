@@ -70,18 +70,19 @@ const updateAccountDetails = asyncHandler(async (req, res, next) => {
 
 //add avatar
 const addAvatar = asyncHandler(async (req, res, next) => {
-   const user = await User.findById(req.user?._id);
-   if (user.avatar) {
-      return next(new ApiError(StatusCodes.CONFLICT, "Avatar already exist!"));
+   let avatarLocalPath;
+   if (
+      req.files &&
+      Array.isArray(req.files.avatar) &&
+      req.files.avatar.length > 0
+   ) {
+      avatarLocalPath = req.files?.avatar[0]?.path;
    }
-   if (!req.files) {
-      return next(
-         new ApiError(StatusCodes.BAD_REQUEST, "Please select any image!")
-      );
+   if (!avatarLocalPath) {
+      return next(new ApiError(StatusCodes.BAD_REQUEST, "Please select file!"));
    }
-   const avatarLocalPath = req.files?.avatar[0]?.path;
-   const path = await uploadOnCloudinary(avatarLocalPath);
-   if (!path) {
+   const avatar = await uploadOnCloudinary(avatarLocalPath);
+   if (!avatar) {
       return next(
          new ApiError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -90,54 +91,66 @@ const addAvatar = asyncHandler(async (req, res, next) => {
       );
    }
    await User.findByIdAndUpdate(req.user?._id, {
-      $set: { avatar: path.secure_url },
+      $set: {
+         avatar: { public_id: avatar?.public_id, url: avatar?.secure_url },
+      },
    });
    return res
       .status(StatusCodes.OK)
       .json(new ApiResponse(StatusCodes.OK, {}, "Avatar added successfully!"));
 });
 
-//add cover image
-const addCoverImage = asyncHandler(async (req, res, next) => {
+//update avatar
+const updateAvatar = asyncHandler(async (req, res, next) => {
+   let avatarLocalPath;
+   if (
+      req.files &&
+      Array.isArray(req.files.avatar) &&
+      req.files.avatar.length > 0
+   ) {
+      avatarLocalPath = req.files?.avatar[0]?.path;
+   }
+   if (!avatarLocalPath) {
+      return next(new ApiError(StatusCodes.BAD_REQUEST, "Please select file!"));
+   }
+   const avatar = await uploadOnCloudinary(avatarLocalPath);
+   if (!avatar.url) {
+      return next(
+         StatusCodes.INTERNAL_SERVER_ERROR,
+         "Error while uploading avatar!"
+      );
+   }
    const user = await User.findById(req.user?._id);
-   if (user.coverImage) {
-      return next(
-         new ApiError(StatusCodes.CONFLICT, "Cover image already exist!")
-      );
-   }
-   if (!req.files) {
-      return next(
-         new ApiError(StatusCodes.BAD_REQUEST, "Please select any image!")
-      );
-   }
-   const coverLocalPath = req.files?.coverImage[0]?.path;
-   const path = await uploadOnCloudinary(coverLocalPath);
-   if (!path) {
-      return next(
-         new ApiError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            "Error While add cover image!"
-         )
-      );
+   if (user?.avatar?.public_id) {
+      const avatarPublicId = user?.avatar?.public_id;
+      await cloudinary.uploader.destroy(avatarPublicId);
    }
    await User.findByIdAndUpdate(req.user?._id, {
-      $set: { coverImage: path.secure_url },
+      $set: { avatar: "" },
    });
+   await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+         $set: {
+            avatar: { public_id: avatar?.public_id, url: avatar?.secure_url },
+         },
+      },
+      { new: true }
+   );
    return res
       .status(StatusCodes.OK)
       .json(
-         new ApiResponse(StatusCodes.OK, {}, "Cover image added successfully!")
+         new ApiResponse(StatusCodes.OK, {}, "Avatar updated successfully!")
       );
 });
 
 //delete avatar
 const deleteAvatar = asyncHandler(async (req, res, next) => {
    const user = await User.findById(req.user?._id);
-   let avatarUrl = user.avatar;
-   const avatarArray = avatarUrl.split("/");
-   const avatarImage = avatarArray[avatarArray.length - 1];
-   const avatarPublicId = avatarImage.split(".")[0];
-   const result = await cloudinary.uploader.destroy(avatarPublicId);
+   if (user?.avatar?.public_id) {
+      const avatarPublicId = user?.avatar?.public_id;
+      await cloudinary.uploader.destroy(avatarPublicId);
+   }
    await User.findByIdAndUpdate(req.user?._id, {
       $set: { avatar: "" },
    });
@@ -156,121 +169,10 @@ const deleteAvatar = asyncHandler(async (req, res, next) => {
       );
 });
 
-//delete cover image
-const deleteCoverImage = asyncHandler(async (req, res, next) => {
-   const user = await User.findById(req.user?._id);
-   let coverImageUrl = user.coverImage;
-   const coverImageArray = coverImageUrl.split("/");
-   const coverImage = coverImageArray[coverImageArray.length - 1];
-   const coverImagePublicId = coverImage.split(".")[0];
-   const result = await cloudinary.uploader.destroy(coverImagePublicId);
-   await User.findByIdAndUpdate(req.user?._id, {
-      $set: { coverImage: "" },
-   });
-   if (!result) {
-      return next(
-         new ApiError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            "Error while deleting cover image!"
-         )
-      );
-   }
-   return res
-      .status(StatusCodes.OK)
-      .json(
-         new ApiResponse(StatusCodes.OK, result, "Avatar deleted successfully!")
-      );
-});
-
-//update avatar
-const updateAvatar = asyncHandler(async (req, res, next) => {
-   if (!req.files) {
-      return next(
-         new ApiError(StatusCodes.BAD_REQUEST, "Please select any image!")
-      );
-   }
-   const avatarLocalPath = req.files?.avatar[0]?.path;
-   if (!avatarLocalPath) {
-      return next(
-         new ApiError(StatusCodes.BAD_REQUEST, "Avatar file is missing!")
-      );
-   }
-   const avatar = await uploadOnCloudinary(avatarLocalPath);
-   if (!avatar.url) {
-      return next(
-         StatusCodes.INTERNAL_SERVER_ERROR,
-         "Error while uploading avatar!"
-      );
-   }
-   const user = await User.findById(req.user?._id);
-   let avatarUrl = user.avatar;
-   const avatarArray = avatarUrl.split("/");
-   const avatarImage = avatarArray[avatarArray.length - 1];
-   const avatarPublicId = avatarImage.split(".")[0];
-   const result = await cloudinary.uploader.destroy(avatarPublicId);
-   await User.findByIdAndUpdate(req.user?._id, {
-      $set: { avatar: "" },
-   });
-   await User.findByIdAndUpdate(
-      req.user?._id,
-      { $set: { avatar: avatar.secure_url } },
-      { new: true }
-   );
-   return res
-      .status(StatusCodes.OK)
-      .json(
-         new ApiResponse(StatusCodes.OK, {}, "Avatar updated successfully!")
-      );
-});
-
-//update coverImage
-const updateCoverImage = asyncHandler(async (req, res, next) => {
-   if (!req.files) {
-      return next(StatusCodes.BAD_REQUEST, "Please select any image!");
-   }
-   const coverImageLocalPath = req.files?.coverImage[0]?.path;
-   if (!coverImageLocalPath) {
-      return next(StatusCodes.BAD_REQUEST, "Avatar file is missing!");
-   }
-   const coverImagePath = await uploadOnCloudinary(coverImageLocalPath);
-   if (!coverImagePath.secure_url) {
-      return next(
-         StatusCodes.INTERNAL_SERVER_ERROR,
-         "Error while uploading avatar!"
-      );
-   }
-   const user = await User.findById(req.user?._id);
-   let coverImageUrl = user.coverImage;
-   const coverImageArray = coverImageUrl.split("/");
-   const coverImage = coverImageArray[coverImageArray.length - 1];
-   const coverImagePublicId = coverImage.split(".")[0];
-   await cloudinary.uploader.destroy(coverImagePublicId);
-   await User.findByIdAndUpdate(req.user?._id, {
-      $set: { coverImage: "" },
-   });
-   await User.findByIdAndUpdate(
-      req.user?._id,
-      { $set: { coverImage: coverImagePath.secure_url } },
-      { new: true }
-   );
-   return res
-      .status(StatusCodes.OK)
-      .json(
-         new ApiResponse(
-            StatusCodes.OK,
-            {},
-            "Cover image updated successfully!"
-         )
-      );
-});
-
 export {
    changeUserPassword,
    updateAccountDetails,
    addAvatar,
-   addCoverImage,
    deleteAvatar,
-   deleteCoverImage,
    updateAvatar,
-   updateCoverImage,
 };

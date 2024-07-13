@@ -46,28 +46,19 @@ const signup = asyncHandler(async (req, res, next) => {
    ) {
       avatarLocalPath = req.files?.avatar[0]?.path;
    }
-   let coverImageLocalPath;
-   if (
-      req.files &&
-      Array.isArray(req.files.coverImage) &&
-      req.files.coverImage.length > 0
-   ) {
-      coverImageLocalPath = req.files?.coverImage[0]?.path;
-   }
    const user = await User.findOne({
       $or: [{ email }, { phone }],
    });
    if (user) {
       return next(new ApiError(StatusCodes.CONFLICT, "User already exist!"));
    }
+   //there one issue when user allready exit then there image is uploaded public/temp
    const avatar = await uploadOnCloudinary(avatarLocalPath);
-   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
    const newUser = await User.create({
       name,
       email,
       phone,
-      avatar: avatar?.secure_url || "",
-      coverImage: coverImage?.secure_url || "",
+      avatar: { public_id: avatar?.public_id, url: avatar?.secure_url },
       gender,
       password,
    });
