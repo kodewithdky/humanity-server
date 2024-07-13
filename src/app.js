@@ -26,6 +26,11 @@ app.use(express.static("public"));
 app.use(cookieParser());
 app.use(morgan("dev"));
 
+//only test purpose
+app.get("/", (req, res) => {
+   res.send("We are live.");
+});
+
 //import routes
 import authRouter from "./routes/auth.routes.js";
 import userRouter from "./routes/user.routes.js";
