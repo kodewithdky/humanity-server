@@ -65,6 +65,16 @@ const getVolunteers = asyncHandler(async (req, res, next) => {
          { name: { $regex: ".*" + search + ".*", $options: "i" } },
          { email: { $regex: ".*" + search + ".*", $options: "i" } },
          { mobile: { $regex: ".*" + search + ".*", $options: "i" } },
+         { fname: { $regex: ".*" + search + ".*", $options: "i" } },
+         { mname: { $regex: ".*" + search + ".*", $options: "i" } },
+         { address: { $regex: ".*" + search + ".*", $options: "i" } },
+         { city: { $regex: ".*" + search + ".*", $options: "i" } },
+         { pincode: { $regex: ".*" + search + ".*", $options: "i" } },
+         { state: { $regex: ".*" + search + ".*", $options: "i" } },
+         { gender: { $regex: ".*" + search + ".*", $options: "i" } },
+         { dob: { $regex: ".*" + search + ".*", $options: "i" } },
+         { qualification: { $regex: ".*" + search + ".*", $options: "i" } },
+         { skills: { $regex: ".*" + search + ".*", $options: "i" } },
       ],
    })
       .limit(limit * 1)
@@ -77,6 +87,16 @@ const getVolunteers = asyncHandler(async (req, res, next) => {
          { name: { $regex: ".*" + search + ".*", $options: "i" } },
          { email: { $regex: ".*" + search + ".*", $options: "i" } },
          { mobile: { $regex: ".*" + search + ".*", $options: "i" } },
+         { amount: { $regex: ".*" + search + ".*", $options: "i" } },
+         {
+            razorpay_payment_id: {
+               $regex: ".*" + search + ".*",
+               $options: "i",
+            },
+         },
+         {
+            razorpay_signature: { $regex: ".*" + search + ".*", $options: "i" },
+         },
       ],
    }).countDocuments();
    return res.status(StatusCodes.OK).json(
