@@ -10,6 +10,7 @@ import {
    updateVolunteerDetails,
 } from "../controllers/admin.controllers.js";
 import { isAdmin, verifyJWT } from "../middlewares/auth.middleware.js";
+import { upload } from "../middlewares/multer.middleware.js";
 //express router
 const router = Router();
 //routes
@@ -18,9 +19,17 @@ router.route("/get-users").get(verifyJWT, isAdmin, getUsers);
 //get volunteer
 router.route("/get-volunteers").get(verifyJWT, isAdmin, getVolunteers);
 //update volunteer details
-router
-   .route("/update-volunteer-details/:id")
-   .put(verifyJWT, isAdmin, updateVolunteerDetails);
+router.route("/update-volunteer-details/:id").put(
+   upload.fields([
+      {
+         name: "avatar",
+         maxCount: 1,
+      },
+   ]),
+   verifyJWT,
+   isAdmin,
+   updateVolunteerDetails
+);
 //get payments
 router.route("/get-payments").get(verifyJWT, isAdmin, getPayments);
 // delete user

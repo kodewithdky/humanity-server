@@ -127,35 +127,50 @@ const updateVolunteerDetails = asyncHandler(async (req, res, next) => {
       skills,
    } = req.body;
    if (
-      [
-         name,
-         email,
-         phone,
-         gender,
-         fname,
-         mname,
-         dob,
-         address,
-         city,
-         state,
-         pincode,
-         qualification,
-         skills,
-      ].some((field) => field?.trim() === "")
+      !name ||
+      !email ||
+      !phone ||
+      !gender ||
+      !fname ||
+      !mname ||
+      !dob ||
+      !address ||
+      !city ||
+      !state ||
+      !pincode ||
+      !qualification ||
+      !skills
    ) {
       return next(
-         new ApiError(StatusCodes.BAD_REQUEST, "Name and email is required!")
+         new ApiError(StatusCodes.BAD_REQUEST, "All fields required!")
       );
    }
-   if ([name, gender, email, phone].some((field) => field?.trim() === "")) {
-      return next(
-         new ApiError(StatusCodes.BAD_REQUEST, "All fields are required!")
-      );
+   let avatarLocalPath;
+   if (
+      req.files &&
+      Array.isArray(req.files.avatar) &&
+      req.files.avatar.length > 0
+   ) {
+      avatarLocalPath = req.files?.avatar[0]?.path;
    }
-   const volunteer = await Volunteer.findByIdAndUpdate(
+   if (!avatarLocalPath) {
+      return next(new ApiError(StatusCodes.CONFLICT, "Please select file!"));
+   }
+   let avatar;
+   if (!avatarLocalPath) {
+      avatar = await uploadOnCloudinary(avatarLocalPath);
+   }
+
+   const volunteer = await Volunteer.findById({ _id: id });
+   if (volunteer?.avatar?.public_id) {
+      const avatarPublicId = volunteer?.avatar?.public_id;
+      await cloudinary.uploader.destroy(avatarPublicId);
+   }
+   const updateVolunteer = await Volunteer.findByIdAndUpdate(
       { _id: id },
       {
          $set: {
+            avatar: { public_id: avatar?.public_id, url: avatar?.secure_url },
             name,
             email,
             phone,

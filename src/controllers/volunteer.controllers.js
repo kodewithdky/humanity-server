@@ -4,6 +4,7 @@ import { Volunteer } from "../models/volunteer.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { StatusCodes } from "http-status-codes";
 import { uploadOnCloudinary } from "../services/cloudinary.js";
+import fs from "fs";
 
 //volunteer
 const resgisterAsVolunteer = asyncHandler(async (req, res, next) => {
@@ -23,41 +24,25 @@ const resgisterAsVolunteer = asyncHandler(async (req, res, next) => {
       qualification,
       skills,
    } = req.body;
-   console.log(
-      name,
-      email,
-      phone,
-      gender,
-      fname,
-      mname,
-      dob,
-      address,
-      city,
-      state,
-      pincode,
-      qualification,
-      skills
-   );
    if (
-      [
-         name,
-         email,
-         phone,
-         gender,
-         fname,
-         mname,
-         dob,
-         address,
-         city,
-         state,
-         pincode,
-         qualification,
-         skills,
-      ].some((field) => field?.trim() === "")
+      !name ||
+      !email ||
+      !phone ||
+      !gender ||
+      !fname ||
+      !mname ||
+      !dob ||
+      !address ||
+      !city ||
+      !state ||
+      !pincode ||
+      !qualification ||
+      !skills
    ) {
-      return next(StatusCodes.BAD_REQUEST, "All fields is required!");
+      return next(
+         new ApiError(StatusCodes.BAD_REQUEST, "All fields are requird!")
+      );
    }
-
    let avatarLocalPath;
    if (
       req.files &&
@@ -66,17 +51,24 @@ const resgisterAsVolunteer = asyncHandler(async (req, res, next) => {
    ) {
       avatarLocalPath = req.files?.avatar[0]?.path;
    }
+   console.log(avatarLocalPath);
+   if (!avatarLocalPath) {
+      return next(new ApiError(StatusCodes.BAD_REQUEST, "Please select file!"));
+   }
    const volunteer = await Volunteer.findOne({
       $or: [{ email }, { phone }],
    });
-   console.log(avatarLocalPath);
    if (volunteer) {
+      fs.unlinkSync(avatarLocalPath);
       return next(
          new ApiError(StatusCodes.CONFLICT, "User already a volunteer!")
       );
-   }a
-   //there one issue when volunter allready exit then there image is uploaded public/temp
-   const avatar = await uploadOnCloudinary(avatarLocalPath);
+   }
+   let avatar;
+   if (avatarLocalPath) {
+      avatar = await uploadOnCloudinary(avatarLocalPath);
+   }
+   console.log(avatar);
    const newVolunteer = await Volunteer.create({
       avatar: { public_id: avatar?.public_id, url: avatar?.secure_url },
       name,
@@ -93,7 +85,6 @@ const resgisterAsVolunteer = asyncHandler(async (req, res, next) => {
       qualification,
       skills,
    });
-
    const createdVolunteer = await Volunteer.findById(newVolunteer._id);
    if (!createdVolunteer) {
       return next(

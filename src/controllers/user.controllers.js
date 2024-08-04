@@ -5,14 +5,36 @@ import { cloudinary, uploadOnCloudinary } from "../services/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { StatusCodes } from "http-status-codes";
 
+//genrate access and refresh token
+const generateAcessAndRefreshTokens = async (userId) => {
+   try {
+      const user = await User.findById(userId);
+      const accessToken = user.generateAccessToken();
+      const refreshToken = user.generateRefreshToken();
+      user.refreshToken = refreshToken;
+      await user.save({ validateBeforeSave: false });
+      return { accessToken, refreshToken };
+   } catch (error) {
+      console.eeror(error);
+   }
+};
+
 //change user password
 const changeUserPassword = asyncHandler(async (req, res, next) => {
-   const { oldPassword, newPassword } = req.body;
-   if ([oldPassword, newPassword].some((field) => field?.trim() === "")) {
+   const { oldPassword, newPassword, confirmPassword } = req.body;
+   if (!oldPassword && !newPassword) {
       return next(
          new ApiError(
             StatusCodes.BAD_REQUEST,
             "Old password and new password is required!"
+         )
+      );
+   }
+   if (newPassword !== confirmPassword) {
+      return next(
+         new ApiError(
+            StatusCodes.BAD_REQUEST,
+            "New password and confirm password does not math!"
          )
       );
    }
@@ -35,35 +57,55 @@ const changeUserPassword = asyncHandler(async (req, res, next) => {
 //update account
 const updateAccountDetails = asyncHandler(async (req, res, next) => {
    const { name, gender, email, phone } = req.body;
-   if ([name, email].some((field) => field?.trim() === "")) {
-      return next(
-         new ApiError(StatusCodes.BAD_REQUEST, "Name and email is required!")
-      );
-   }
-   if ([name, gender, email, phone].some((field) => field?.trim() === "")) {
+   if (!name || !gender || !email || !phone) {
       return next(
          new ApiError(StatusCodes.BAD_REQUEST, "All fields are required!")
       );
    }
-   const user = await User.findByIdAndUpdate(
+   let avatarLocalPath;
+   if (
+      req.files &&
+      Array.isArray(req.files.avatar) &&
+      req.files.avatar.length > 0
+   ) {
+      avatarLocalPath = req.files?.avatar[0]?.path;
+   }
+   console.log(avatarLocalPath);
+   if (!avatarLocalPath) {
+      return next(new ApiError(StatusCodes.BAD_REQUEST, "Please select file!"));
+   }
+   let avatar;
+   if (avatarLocalPath) {
+      avatar = await uploadOnCloudinary(avatarLocalPath);
+   }
+   const user = await User.findById(req.user?._id);
+   if (user?.avatar?.public_id) {
+      const avatarPublicId = user?.avatar?.public_id;
+      await cloudinary.uploader.destroy(avatarPublicId);
+   }
+   const updatedUser = await User.findByIdAndUpdate(
       req.user?._id,
       {
          $set: {
-            name: name || req.user?.name,
-            email: email || req.user?.email,
-            phone: phone || req.user?.phone,
-            gender: gender || req.user?.gender,
+            name,
+            email,
+            phone,
+            gender,
+            avatar: { public_id: avatar?.public_id, url: avatar?.secure_url },
          },
       },
       { new: true }
    ).select("-password -refreshToken");
+   const { accessToken, refreshToken } = await generateAcessAndRefreshTokens(
+      updatedUser._id
+   );
    return res
       .status(StatusCodes.OK)
       .json(
          new ApiResponse(
             StatusCodes.OK,
-            user,
-            "Account details updated successfully!"
+            { user: updatedUser, accessToken, refreshToken },
+            "Account details updated!"
          )
       );
 });
@@ -125,9 +167,6 @@ const updateAvatar = asyncHandler(async (req, res, next) => {
       const avatarPublicId = user?.avatar?.public_id;
       await cloudinary.uploader.destroy(avatarPublicId);
    }
-   await User.findByIdAndUpdate(req.user?._id, {
-      $set: { avatar: "" },
-   });
    await User.findByIdAndUpdate(
       req.user?._id,
       {
@@ -141,6 +180,33 @@ const updateAvatar = asyncHandler(async (req, res, next) => {
       .status(StatusCodes.OK)
       .json(
          new ApiResponse(StatusCodes.OK, {}, "Avatar updated successfully!")
+      );
+});
+
+//get user
+const getUser = asyncHandler(async (req, res, next) => {
+   const user = await User.findById(req.user?._id).select(
+      "-password -refreshToken"
+   );
+   if (!user) {
+      return next(
+         new ApiError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            "Something went wrong!"
+         )
+      );
+   }
+   const { accessToken, refreshToken } = await generateAcessAndRefreshTokens(
+      user._id
+   );
+   return res
+      .status(StatusCodes.OK)
+      .json(
+         new ApiResponse(
+            StatusCodes.OK,
+            { user, accessToken, refreshToken },
+            "Fetched user!"
+         )
       );
 });
 
@@ -174,5 +240,6 @@ export {
    updateAccountDetails,
    addAvatar,
    deleteAvatar,
+   getUser,
    updateAvatar,
 };

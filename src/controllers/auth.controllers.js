@@ -6,6 +6,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { sendOtpOnMail, sendVerificationMail } from "../helpers/email.js";
 import jwt from "jsonwebtoken";
 import { StatusCodes } from "http-status-codes";
+import fs from "fs";
 
 //genrate access and refresh token
 const generateAcessAndRefreshTokens = async (userId) => {
@@ -30,7 +31,7 @@ const options = {
 //signup
 const signup = asyncHandler(async (req, res, next) => {
    const { name, email, phone, gender, password } = req.body;
-   if ([name, email, password].some((field) => field?.trim() === "")) {
+   if (!name || !email || !password) {
       return next(
          new ApiError(
             StatusCodes.BAD_REQUEST,
@@ -50,10 +51,13 @@ const signup = asyncHandler(async (req, res, next) => {
       $or: [{ email }, { phone }],
    });
    if (user) {
+      fs.unlinkSync(avatarLocalPath);
       return next(new ApiError(StatusCodes.CONFLICT, "User already exist!"));
    }
-   //there one issue when user allready exit then there image is uploaded public/temp
-   const avatar = await uploadOnCloudinary(avatarLocalPath);
+   let avatar;
+   if (!avatarLocalPath) {
+      avatar = await uploadOnCloudinary(avatarLocalPath);
+   }
    const newUser = await User.create({
       name,
       email,

@@ -3,6 +3,7 @@ import {
    addAvatar,
    changeUserPassword,
    deleteAvatar,
+   getUser,
    updateAccountDetails,
    updateAvatar,
 } from "../controllers/user.controllers.js";
@@ -14,7 +15,16 @@ const router = Router();
 //change password
 router.route("/change-password").put(verifyJWT, changeUserPassword);
 //update account details
-router.route("/update-acc-details").put(verifyJWT, updateAccountDetails);
+router.route("/update-acc-details").put(
+   upload.fields([
+      {
+         name: "avatar",
+         maxCount: 1,
+      },
+   ]),
+   verifyJWT,
+   updateAccountDetails
+);
 //aad avater
 router.route("/add-avatar").post(
    upload.fields([
@@ -37,6 +47,8 @@ router.route("/update-avatar").put(
    verifyJWT,
    updateAvatar
 );
+//get user
+router.route("/get-user").get(verifyJWT, getUser);
 //delete avatar
 router.route("/delete-avatar").delete(verifyJWT, deleteAvatar);
 
