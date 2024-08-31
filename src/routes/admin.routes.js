@@ -36,7 +36,7 @@ router.route("/get-payments").get(verifyJWT, isAdmin, getPayments);
 router.route("/delete-user/:id").delete(verifyJWT, isAdmin, deleteUser);
 // delete user with volunteer
 router
-   .route("/delete-user-volunteer/:id")
+   .route("/delete-volunteer/:id")
    .delete(verifyJWT, isAdmin, deleteVolunteer);
 //change user privilage
 router.route("/change-privilage/:id").put(verifyJWT, isAdmin, changePrivlage);

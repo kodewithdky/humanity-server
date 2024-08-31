@@ -8,7 +8,6 @@ import { Team } from "../models/team.model.js";
 //add team
 const addTeam = asyncHandler(async (req, res, next) => {
    const { name, role } = req.body;
-   console.log(name, role);
 
    if (!name || !role) {
       return next(
@@ -29,7 +28,6 @@ const addTeam = asyncHandler(async (req, res, next) => {
       );
    }
    const avatarImage = await uploadOnCloudinary(avatarImageLocalPath);
-   console.log("coverImage: ", avatarImage);
    const newteam = await Team.create({
       name,
       role,
@@ -53,7 +51,7 @@ const addTeam = asyncHandler(async (req, res, next) => {
          new ApiResponse(
             StatusCodes.CREATED,
             newteam,
-            "Program created successfully!"
+            "Team added successfully!"
          )
       );
 });
@@ -71,7 +69,7 @@ const deleteTeam = asyncHandler(async (req, res, next) => {
    const { id } = req.params;
    let team = await Team.findById(id);
    if (team?.avatar?.public_id) {
-      const avatarImagePublicId = team.avatar.public_id;
+      const avatarImagePublicId = team?.avatar?.public_id;
       await cloudinary.uploader.destroy(avatarImagePublicId);
    }
    await Team.deleteOne({ _id: id });

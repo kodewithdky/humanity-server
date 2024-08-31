@@ -15,16 +15,7 @@ import {
 const router = Router();
 //routes
 //signin user
-router.route("/sign-up").post(
-   upload.fields([
-      {
-         name: "avatar",
-         maxCount: 1,
-      },
-   ]),
-   signup
-);
-
+router.route("/sign-up").post(signup);
 //verify email
 router.route("/verify").get(verifyEmail);
 //verification

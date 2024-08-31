@@ -15,14 +15,10 @@ passport.use(
          // Here you would typically find or create a user in your database
          const randomePassword =
             Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000;
-         const randomePhone =
-            Math.floor(Math.random() * (9999999999 - 1000000000 + 1)) +
-            1000000000;
          let newUser = {
             socialId: profile.id,
             name: profile.displayName,
             email: profile.emails[0].value,
-            phone: randomePhone,
             password: randomePassword,
          };
          try {
@@ -32,7 +28,6 @@ passport.use(
                   { socialId: profile.id },
                ],
             });
-            a;
             if (user) {
                done(null, user);
             } else {

@@ -1,12 +1,10 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import ApiError from "../middlewares/error.middleware.js";
 import { User } from "../models/user.model.js";
-import { uploadOnCloudinary } from "../services/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { sendOtpOnMail, sendVerificationMail } from "../helpers/email.js";
 import jwt from "jsonwebtoken";
 import { StatusCodes } from "http-status-codes";
-import fs from "fs";
 
 //genrate access and refresh token
 const generateAcessAndRefreshTokens = async (userId) => {
@@ -18,7 +16,7 @@ const generateAcessAndRefreshTokens = async (userId) => {
       await user.save({ validateBeforeSave: false });
       return { accessToken, refreshToken };
    } catch (error) {
-      console.eeror(error);
+      console.error(error);
    }
 };
 
@@ -30,7 +28,7 @@ const options = {
 
 //signup
 const signup = asyncHandler(async (req, res, next) => {
-   const { name, email, phone, gender, password } = req.body;
+   const { name, email, password } = req.body;
    if (!name || !email || !password) {
       return next(
          new ApiError(
@@ -39,31 +37,15 @@ const signup = asyncHandler(async (req, res, next) => {
          )
       );
    }
-   let avatarLocalPath;
-   if (
-      req.files &&
-      Array.isArray(req.files.avatar) &&
-      req.files.avatar.length > 0
-   ) {
-      avatarLocalPath = req.files?.avatar[0]?.path;
-   }
    const user = await User.findOne({
-      $or: [{ email }, { phone }],
+      $or: [{ email }],
    });
    if (user) {
-      fs.unlinkSync(avatarLocalPath);
       return next(new ApiError(StatusCodes.CONFLICT, "User already exist!"));
-   }
-   let avatar;
-   if (!avatarLocalPath) {
-      avatar = await uploadOnCloudinary(avatarLocalPath);
    }
    const newUser = await User.create({
       name,
       email,
-      phone,
-      avatar: { public_id: avatar?.public_id, url: avatar?.secure_url },
-      gender,
       password,
    });
    const createdUser = await User.findById(newUser._id).select(
@@ -136,11 +118,9 @@ const sendVerificationLink = asyncHandler(async (req, res, next) => {
 
 //signin
 const signin = asyncHandler(async (req, res, next) => {
-   const { email, phone, password } = req.body;
-   if (!(email || phone)) {
-      return next(
-         new ApiError(StatusCodes.BAD_REQUEST, "Email or Phone is required!")
-      );
+   const { email, password } = req.body;
+   if (!email) {
+      return next(new ApiError(StatusCodes.BAD_REQUEST, "Email is required!"));
    }
    if (!password) {
       return next(
@@ -148,7 +128,7 @@ const signin = asyncHandler(async (req, res, next) => {
       );
    }
    const user = await User.findOne({
-      $or: [{ email }, { phone }],
+      $or: [{ email }],
    });
    if (!user) {
       return next(
@@ -250,7 +230,7 @@ const refreshAccessToken = asyncHandler(async (req, res, next) => {
 
 //send OTP
 const sendOTP = asyncHandler(async (req, res, next) => {
-   const email = req.body.email;
+   const { email } = req.body;
    if (!email) {
       return next(new ApiError(StatusCodes.BAD_REQUEST, "Email is required!"));
    }
@@ -274,21 +254,10 @@ const sendOTP = asyncHandler(async (req, res, next) => {
 
 //forgot password
 const forgotPassword = asyncHandler(async (req, res, next) => {
-   const { otp, password, cpassword } = req.body;
-   if ([otp, password, cpassword].some((field) => field?.trim() === "")) {
+   const { otp, password } = req.body;
+   if ([otp, password].some((field) => field?.trim() === "")) {
       return next(
-         new ApiError(
-            StatusCodes.BAD_REQUEST,
-            "OTP, Password and Confirm is required!"
-         )
-      );
-   }
-   if (password != cpassword) {
-      return next(
-         new ApiError(
-            StatusCodes.UNAUTHORIZED,
-            "Password and confirm password does not match!"
-         )
+         new ApiError(StatusCodes.BAD_REQUEST, "OTP and Password is required!")
       );
    }
    const user = await User.findOne({ otp });

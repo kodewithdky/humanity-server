@@ -24,7 +24,7 @@ router.get(
 router.get(
    "/callback",
    passport.authenticate("google", {
-      successRedirect: "/auth/google/success",
+      successRedirect: "http://localhost:5173",
       failureRedirect: "/auth/google/failure",
    })
 );
@@ -35,7 +35,13 @@ router.get("/success", (req, res, next) => {
    }
    return res
       .status(StatusCodes.CREATED)
-      .json(new ApiResponse(StatusCodes.OK, req.user, "Sign In successfully!"));
+      .json(
+         new ApiResponse(
+            StatusCodes.OK,
+            { user: req.user },
+            "Sign In successfully!"
+         )
+      );
 });
 // failure
 router.get("/failure", (req, res, next) => {

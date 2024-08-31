@@ -2,11 +2,12 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import ApiError from "../middlewares/error.middleware.js";
-import { Volunteer } from "../models/volunteer.model.js";
 import ExcelJs from "exceljs";
 import { StatusCodes } from "http-status-codes";
-import { cloudinary } from "../services/cloudinary.js";
+import { cloudinary, uploadOnCloudinary } from "../services/cloudinary.js";
 import { Payment } from "../models/paymet.model.js";
+import { Volunteer } from "../models/volunteer.model.js";
+import fs from "fs";
 
 //get users
 const getUsers = asyncHandler(async (req, res, next) => {
@@ -18,19 +19,18 @@ const getUsers = asyncHandler(async (req, res, next) => {
    if (req.query.page) {
       page = req.query.page;
    }
-   const limit = 20;
+   const limit = 6;
    const users = await User.find({
       __v: 0,
       $or: [
          { name: { $regex: ".*" + search + ".*", $options: "i" } },
          { email: { $regex: ".*" + search + ".*", $options: "i" } },
-         { mobile: { $regex: ".*" + search + ".*", $options: "i" } },
+         { phone: { $regex: ".*" + search + ".*", $options: "i" } },
       ],
    })
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .exec();
-
    const count = await User.find({
       __v: 0,
       $or: [
@@ -58,7 +58,7 @@ const getVolunteers = asyncHandler(async (req, res, next) => {
    if (req.query.page) {
       page = req.query.page;
    }
-   const limit = 20;
+   const limit = 6;
    const volunteer = await Volunteer.find({
       __v: 0,
       $or: [
@@ -80,7 +80,6 @@ const getVolunteers = asyncHandler(async (req, res, next) => {
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .exec();
-
    const count = await Volunteer.find({
       __v: 0,
       $or: [
@@ -154,13 +153,13 @@ const updateVolunteerDetails = asyncHandler(async (req, res, next) => {
       avatarLocalPath = req.files?.avatar[0]?.path;
    }
    if (!avatarLocalPath) {
+      fs.unlinkSync(avatarLocalPath);
       return next(new ApiError(StatusCodes.CONFLICT, "Please select file!"));
    }
    let avatar;
-   if (!avatarLocalPath) {
+   if (avatarLocalPath) {
       avatar = await uploadOnCloudinary(avatarLocalPath);
    }
-
    const volunteer = await Volunteer.findById({ _id: id });
    if (volunteer?.avatar?.public_id) {
       const avatarPublicId = volunteer?.avatar?.public_id;
@@ -193,7 +192,7 @@ const updateVolunteerDetails = asyncHandler(async (req, res, next) => {
       .json(
          new ApiResponse(
             StatusCodes.OK,
-            volunteer,
+            updateVolunteer,
             "Volunteer details updated!"
          )
       );
@@ -221,7 +220,6 @@ const getPayments = asyncHandler(async (req, res, next) => {
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .exec();
-
    const count = await Payment.find({
       __v: 0,
       $or: [
@@ -242,10 +240,10 @@ const getPayments = asyncHandler(async (req, res, next) => {
 //delete user
 const deleteUser = asyncHandler(async (req, res, next) => {
    const { id } = req.params;
-   const user = await User.findOne({ _id: id });
+   let user = await User.findById(id);
    if (user?.avatar?.public_id) {
-      const avatarPublicId = user?.avatar?.public_id;
-      await cloudinary.uploader.destroy(avatarPublicId);
+      const avatarImagePublicId = user?.avatar?.public_id;
+      await cloudinary.uploader.destroy(avatarImagePublicId);
    }
    await User.deleteOne({ _id: id });
    return res
@@ -253,17 +251,17 @@ const deleteUser = asyncHandler(async (req, res, next) => {
       .json(new ApiResponse(StatusCodes.OK, {}, "User deleted!"));
 });
 
-//delete user with volunteer
+//delete  volunteer
 const deleteVolunteer = asyncHandler(async (req, res, next) => {
    const { id } = req.params;
-   const user = User.findOne({ _id: id });
-   if (user?.avatar?.public_id) {
-      const avatarPublicId = user?.avatar?.public_id;
-      await cloudinary.uploader.destroy(avatarPublicId);
+   let volunteer = await Volunteer.findById(id);
+   if (volunteer?.avatar?.public_id) {
+      const avatarImagePublicId = volunteer?.avatar?.public_id;
+      await cloudinary.uploader.destroy(avatarImagePublicId);
    }
    await Volunteer.deleteOne({ _id: id });
    return res
-      .status(200)
+      .status(StatusCodes.OK)
       .json(new ApiResponse(StatusCodes.OK, {}, "Volunteer deleted!"));
 });
 

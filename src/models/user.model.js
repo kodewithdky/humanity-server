@@ -9,24 +9,31 @@ const userSchema = new mongoose.Schema(
       },
       name: {
          type: String,
-         required: true,
+         required: [true, "Name is required!"],
+         minlength: [3, "Name must be at least 3 characters long!"],
+         maxlength: [30, "Name must be less than 30 characters long!"],
+         validate: {
+            validator: function (v) {
+               return /^[a-zA-Z\s]+$/.test(v); // Only allows letters and spaces
+            },
+            message: (props) => `${props.value} is not a valid name!`,
+         },
          trim: true,
       },
       email: {
          type: String,
-         required: true,
+         required: [true, "Email is required!"],
+         match: [/.+\@.+\..+/, "Please enter a valid email address!"],
          unique: true,
-         lowercase: true,
          trim: true,
       },
       phone: {
          type: String,
-         unique: true,
+         match: [/^\d{6}$/, "Please enter a valid 6-digit pincode!"],
          trim: true,
       },
       gender: {
          type: String,
-         trim: true,
       },
       avatar: {
          public_id: {
@@ -46,7 +53,15 @@ const userSchema = new mongoose.Schema(
       },
       password: {
          type: String,
-         required: true,
+         required: [true, "Password is required!"],
+         minlength: [8, "Password must be at least 8 characters long!"],
+         maxlength: [16, "Password must be less than 16 characters long!"],
+         validate: {
+            validator: function (v) {
+               return /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/.test(v);
+            },
+            message: (props) => `${props.value} is not a valid password!`,
+         },
       },
       refreshToken: {
          type: String,
@@ -75,9 +90,7 @@ userSchema.methods.generateAccessToken = function () {
       {
          _id: this._id,
          name: this.name,
-         username: this.username,
          email: this.email,
-         phone: this.phone,
       },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }

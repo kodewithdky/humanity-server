@@ -3,20 +3,24 @@ const TeamSchema = new mongoose.Schema(
    {
       name: {
          type: String,
-         required: true,
+         required: [true, "Name is required!"],
+         minlength: [3, "Name must be at least 3 characters long!"],
+         maxlength: [30, "Name must be less than 30 characters long!"],
       },
       role: {
          type: String,
-         required: true,
+         required: [true, "Role is required!"],
+         minlength: [3, "Role must be at least 3 characters long!"],
+         maxlength: [30, "Role must be less than 30 characters long!"],
       },
       avatar: {
          public_id: {
             type: String,
-            required: true,
+            required: [true, "Avatar image is required!"],
          },
          url: {
             type: String,
-            required: true,
+            required: [true, "Avatar image is required!"],
          },
       },
    },

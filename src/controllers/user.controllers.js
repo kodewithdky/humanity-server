@@ -15,7 +15,7 @@ const generateAcessAndRefreshTokens = async (userId) => {
       await user.save({ validateBeforeSave: false });
       return { accessToken, refreshToken };
    } catch (error) {
-      console.eeror(error);
+      console.error(error);
    }
 };
 
@@ -70,7 +70,6 @@ const updateAccountDetails = asyncHandler(async (req, res, next) => {
    ) {
       avatarLocalPath = req.files?.avatar[0]?.path;
    }
-   console.log(avatarLocalPath);
    if (!avatarLocalPath) {
       return next(new ApiError(StatusCodes.BAD_REQUEST, "Please select file!"));
    }

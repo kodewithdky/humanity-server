@@ -40,6 +40,7 @@ const sendVerificationMail = (name, email, userId) => {
 };
 
 const sendOtpOnMail = (email, otp) => {
+   console.log(process.env.SMTP_MAIL);
    try {
       //creating transporter
       const transporter = nodemailer.createTransport({

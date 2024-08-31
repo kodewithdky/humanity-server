@@ -8,7 +8,6 @@ import { Program } from "../../src/models/program.model.js";
 //add program
 const addProgram = asyncHandler(async (req, res, next) => {
    const { title, description } = req.body;
-   console.log(title, description);
 
    if (!title || !description) {
       return next(
@@ -26,15 +25,12 @@ const addProgram = asyncHandler(async (req, res, next) => {
    ) {
       coverImageLocalPath = req.files?.coverImage[0]?.path;
    }
-   console.log(coverImageLocalPath);
    if (!coverImageLocalPath) {
       return next(
          new ApiError(StatusCodes.BAD_REQUEST, "Cover image is required!")
       );
    }
    const coverImage = await uploadOnCloudinary(coverImageLocalPath);
-   console.log("coverImage: ", coverImage);
-   console.log("coverImage: ", coverImage);
    const newProgram = await Program.create({
       title,
       description,
@@ -58,7 +54,7 @@ const addProgram = asyncHandler(async (req, res, next) => {
          new ApiResponse(
             StatusCodes.CREATED,
             newProgram,
-            "Program created successfully!"
+            "Program added successfully!"
          )
       );
 });
