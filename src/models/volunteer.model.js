@@ -11,7 +11,7 @@ const VolunteerSchema = new mongoose.Schema(
             type: String,
             required: [true, "Please select anvatar!"],
             match: [
-               /^https?:\/\/.+\.(jpg|jpeg|png)$/,
+               /^https?:\/\/.+\.(jpg|jpeg|png|webp)$/,
                "Please select JPG Or JPEG Or PNG file!",
             ],
          },
