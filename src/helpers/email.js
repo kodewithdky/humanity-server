@@ -29,9 +29,9 @@ const sendVerificationMail = (name, email, userId) => {
       //send email
       transporter.sendMail(message, function (error, info) {
          if (error) {
-            console.log(error);
+            console.warn(error);
          } else {
-            console.log("email has been send:", info.response);
+            console.warn("email has been send:", info.response);
          }
       });
    } catch (error) {
@@ -40,7 +40,6 @@ const sendVerificationMail = (name, email, userId) => {
 };
 
 const sendOtpOnMail = (email, otp) => {
-   console.log(process.env.SMTP_MAIL);
    try {
       //creating transporter
       const transporter = nodemailer.createTransport({
@@ -63,9 +62,9 @@ const sendOtpOnMail = (email, otp) => {
       //send email
       transporter.sendMail(message, function (error, info) {
          if (error) {
-            console.log(error);
+            console.warn(error);
          } else {
-            console.log("email has been send:", info.response);
+            console.warn("email has been send:", info.response);
          }
       });
    } catch (error) {

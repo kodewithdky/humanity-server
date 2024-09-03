@@ -59,9 +59,7 @@ const updateAccountDetails = asyncHandler(async (req, res, next) => {
          new ApiError(StatusCodes.BAD_REQUEST, "All fields are required!")
       );
    }
-   console.log(req.files.avatar)
    let avatarLocalPath;
-   console.log("avatarLocalPath: ", avatarLocalPath);
    if (
       req.files &&
       Array.isArray(req.files.avatar) &&
