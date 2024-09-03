@@ -4,6 +4,7 @@ import { cloudinary, uploadOnCloudinary } from "../services/cloudinary.js";
 import ApiError from "../middlewares/error.middleware.js";
 import { StatusCodes } from "http-status-codes";
 import { Program } from "../../src/models/program.model.js";
+import fs from "fs";
 
 //add program
 const addProgram = asyncHandler(async (req, res, next) => {
@@ -18,12 +19,10 @@ const addProgram = asyncHandler(async (req, res, next) => {
       );
    }
    let coverImageLocalPath;
-   if (
-      req.files &&
-      Array.isArray(req.files.coverImage) &&
-      req.files.coverImage.length > 0
-   ) {
-      coverImageLocalPath = req.files?.coverImage[0]?.path;
+   console.log(req.files.coverImage[0].path);
+   console.log("coverImageLocalPath: ", coverImageLocalPath);
+   if (req.files.coverImage[0].path) {
+      coverImageLocalPath = req.files.coverImage[0].path;
    }
    if (!coverImageLocalPath) {
       return next(

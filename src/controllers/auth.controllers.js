@@ -8,16 +8,12 @@ import { StatusCodes } from "http-status-codes";
 
 //genrate access and refresh token
 const generateAcessAndRefreshTokens = async (userId) => {
-   try {
-      const user = await User.findById(userId);
-      const accessToken = user.generateAccessToken();
-      const refreshToken = user.generateRefreshToken();
-      user.refreshToken = refreshToken;
-      await user.save({ validateBeforeSave: false });
-      return { accessToken, refreshToken };
-   } catch (error) {
-      console.error(error);
-   }
+   const user = await User.findById(userId);
+   const accessToken = user.generateAccessToken();
+   const refreshToken = user.generateRefreshToken();
+   user.refreshToken = refreshToken;
+   await user.save({ validateBeforeSave: false });
+   return { accessToken, refreshToken };
 };
 
 //cookie option
@@ -194,27 +190,29 @@ const refreshAccessToken = asyncHandler(async (req, res, next) => {
          incomingRefreshToken,
          process.env.REFRESH_TOKEN_SECRET
       );
-      const user = await User.findById(decodedToken?._id);
+      const user = await User.findById(decodedToken?._id).select(
+         "-password -refreshToken"
+      );
       if (!user) {
          return next(
             new ApiError(StatusCodes.UNAUTHORIZED, "Invalid refresh token!")
          );
       }
-      if (incomingRefreshToken !== user?.refreshToken) {
-         return next(
-            new ApiError(StatusCodes.UNAUTHORIZED, "Refresh token expired!")
-         );
-      }
-      const { accessToken, newRefreshToken } =
-         await generateAcessAndRefreshTokens(user._id);
+      const { accessToken, refreshToken } = await generateAcessAndRefreshTokens(
+         user._id
+      );
       return res
          .status(StatusCodes.OK)
          .cookie("accessToken", accessToken, options)
-         .cookie("refreshToken", newRefreshToken, options)
+         .cookie("refreshToken", incomingRefreshToken, options)
          .json(
             new ApiResponse(
                StatusCodes.OK,
-               { accessToken, refreshToken: newRefreshToken },
+               {
+                  user,
+                  accessToken: accessToken,
+                  refreshToken: incomingRefreshToken,
+               },
                "Access token refreshed!"
             )
          );

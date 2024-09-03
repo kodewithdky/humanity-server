@@ -16,7 +16,6 @@ const ProgramSchema = new mongoose.Schema(
       coverImage: {
          public_id: {
             type: String,
-            required: [true, "Cover image is required!"],
          },
          url: {
             type: String,

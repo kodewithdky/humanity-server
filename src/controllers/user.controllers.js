@@ -4,19 +4,16 @@ import { User } from "../models/user.model.js";
 import { cloudinary, uploadOnCloudinary } from "../services/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { StatusCodes } from "http-status-codes";
+import fs from "fs";
 
 //genrate access and refresh token
 const generateAcessAndRefreshTokens = async (userId) => {
-   try {
-      const user = await User.findById(userId);
-      const accessToken = user.generateAccessToken();
-      const refreshToken = user.generateRefreshToken();
-      user.refreshToken = refreshToken;
-      await user.save({ validateBeforeSave: false });
-      return { accessToken, refreshToken };
-   } catch (error) {
-      console.error(error);
-   }
+   const user = await User.findById(userId);
+   const accessToken = user.generateAccessToken();
+   const refreshToken = user.generateRefreshToken();
+   user.refreshToken = refreshToken;
+   await user.save({ validateBeforeSave: false });
+   return { accessToken, refreshToken };
 };
 
 //change user password
@@ -62,7 +59,9 @@ const updateAccountDetails = asyncHandler(async (req, res, next) => {
          new ApiError(StatusCodes.BAD_REQUEST, "All fields are required!")
       );
    }
+   console.log(req.files.avatar)
    let avatarLocalPath;
+   console.log("avatarLocalPath: ", avatarLocalPath);
    if (
       req.files &&
       Array.isArray(req.files.avatar) &&

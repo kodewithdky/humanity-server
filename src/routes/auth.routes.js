@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { upload } from "../middlewares/multer.middleware.js";
 import { isLogout, verifyJWT } from "../middlewares/auth.middleware.js";
 import {
    forgotPassword,

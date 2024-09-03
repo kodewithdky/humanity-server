@@ -5,7 +5,6 @@ const VolunteerSchema = new mongoose.Schema(
       avatar: {
          public_id: {
             type: String,
-            required: [true, "Please select anvatar!"],
          },
          url: {
             type: String,
