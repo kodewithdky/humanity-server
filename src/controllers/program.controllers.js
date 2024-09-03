@@ -22,7 +22,7 @@ const addProgram = asyncHandler(async (req, res, next) => {
       Array.isArray(req.files.coverImage) &&
       req.files.coverImage.length > 0
    ) {
-      avatarLocalPath = req.files?.coverImage[0]?.path;
+      coverImageLocalPath = req.files?.coverImage[0]?.path;
    }
    if (req.files.coverImage[0].path) {
       coverImageLocalPath = req.files.coverImage[0].path;
