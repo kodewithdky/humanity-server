@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { resgisterAsVolunteer } from "../controllers/volunteer.controllers.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
 //express router

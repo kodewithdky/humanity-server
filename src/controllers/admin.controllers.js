@@ -2,7 +2,6 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { User } from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import ApiError from "../middlewares/error.middleware.js";
-import ExcelJs from "exceljs";
 import { StatusCodes } from "http-status-codes";
 import { cloudinary, uploadOnCloudinary } from "../services/cloudinary.js";
 import { Payment } from "../models/paymet.model.js";
@@ -292,8 +291,6 @@ const changePrivlage = asyncHandler(async (req, res, next) => {
          )
       );
 });
-
-
 
 export {
    getUsers,

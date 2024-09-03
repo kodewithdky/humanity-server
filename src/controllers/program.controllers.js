@@ -41,7 +41,6 @@ const addProgram = asyncHandler(async (req, res, next) => {
          url: coverImage?.secure_url,
       },
    });
-
    if (!newProgram) {
       return next(
          new ApiError(

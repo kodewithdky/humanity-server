@@ -8,7 +8,6 @@ import { Team } from "../models/team.model.js";
 //add team
 const addTeam = asyncHandler(async (req, res, next) => {
    const { name, role } = req.body;
-
    if (!name || !role) {
       return next(
          new ApiError(StatusCodes.BAD_REQUEST, "Name and role is required!")
@@ -36,7 +35,6 @@ const addTeam = asyncHandler(async (req, res, next) => {
          url: avatarImage?.secure_url,
       },
    });
-
    if (!newteam) {
       return next(
          new ApiError(
