@@ -3,7 +3,6 @@ import {
    changePrivlage,
    deleteUser,
    deleteVolunteer,
-   exportExcel,
    getPayments,
    getUsers,
    getVolunteers,
@@ -40,7 +39,5 @@ router
    .delete(verifyJWT, isAdmin, deleteVolunteer);
 //change user privilage
 router.route("/change-privilage/:id").put(verifyJWT, isAdmin, changePrivlage);
-//export excel
-router.route("/export-user").get(verifyJWT, isAdmin, exportExcel);
 
 export default router;

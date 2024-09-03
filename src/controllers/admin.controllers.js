@@ -293,34 +293,7 @@ const changePrivlage = asyncHandler(async (req, res, next) => {
       );
 });
 
-//export in excel
-const exportExcel = asyncHandler(async (req, res, next) => {
-   const users = await User.find({ __v: 0 });
-   const workbook = new ExcelJs.Workbook();
-   const worksheet = workbook.addWorksheet("My Users");
-   worksheet.columns = [
-      { header: "S.no", key: "s_no", width: 10 },
-      { header: "Name", key: "name", width: 10 },
-      { header: "Email", key: "email", width: 30 },
-      { header: "Phone", key: "phone", width: 20 },
-      { header: "Gender", key: "gender", width: 10 },
-      { header: "Admin", key: "is_admin", width: 10 },
-      { header: "Verified", key: "is_verified", width: 10 },
-   ];
-   let count = 1;
-   users.forEach((user) => {
-      user.s_no = count;
-      worksheet.addRow(user);
-      count += 1;
-   });
-   worksheet.getRow(1).eachCell((cell) => {
-      cell.font = { bold: true };
-   });
-   const data = await workbook.xlsx.writeFile("users.xlsx");
-   return res
-      .status(200)
-      .json(new ApiResponse(200, { data }, "done successfully!"));
-});
+
 
 export {
    getUsers,
@@ -330,5 +303,4 @@ export {
    deleteUser,
    deleteVolunteer,
    changePrivlage,
-   exportExcel,
 };
