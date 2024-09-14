@@ -29,13 +29,13 @@ const sendVerificationMail = (name, email, userId) => {
       //send email
       transporter.sendMail(message, function (error, info) {
          if (error) {
-            console.warn(error);
+            console.log(error);
          } else {
-            console.warn("email has been send:", info.response);
+            console.log("email has been send:", info.response);
          }
       });
    } catch (error) {
-      console.warn(error);
+      console.log(error);
    }
 };
 
@@ -62,13 +62,13 @@ const sendOtpOnMail = (email, otp) => {
       //send email
       transporter.sendMail(message, function (error, info) {
          if (error) {
-            console.warn(error);
+            console.log(error);
          } else {
-            console.warn("email has been send:", info.response);
+            console.log("email has been send:", info.response);
          }
       });
    } catch (error) {
-      console.warn(error);
+      console.log(error);
    }
 };
 

@@ -13,7 +13,7 @@ const PaymentSchema = new mongoose.Schema(
          type: String,
          required: true,
       },
-      purpose: {
+      pancard: {
          type: String,
          required: true,
       },
