@@ -16,7 +16,7 @@ const router = Router();
 //signin user
 router.route("/sign-up").post(signup);
 //verify email
-router.route("/verify").get(verifyEmail);
+router.route("/verify/:id").get(verifyEmail);
 //verification
 router.route("/verification-link").post(sendVerificationLink);
 //login

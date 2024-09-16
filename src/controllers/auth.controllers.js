@@ -69,15 +69,14 @@ const signup = asyncHandler(async (req, res, next) => {
 
 //verify email
 const verifyEmail = asyncHandler(async (req, res, next) => {
-   const user = await User.findOne({
-      _id: req.query.id,
-   });
+   const { id } = req.params;
+   const user = await User.findById({ _id: id });
    if (user.is_verified) {
       return next(
          new ApiError(StatusCodes.CONFLICT, "Email already verified!")
       );
    }
-   await User.updateOne({ _id: req.query.id }, { $set: { is_verified: 1 } });
+   await User.updateOne({ _id: id }, { $set: { is_verified: 1 } });
    return res
       .status(StatusCodes.OK)
       .json(
