@@ -45,7 +45,7 @@ const addProgram = asyncHandler(async (req, res, next) => {
       return next(
          new ApiError(
             StatusCodes.INTERNAL_SERVER_ERROR,
-            "Something went wrong while createing program!"
+            "Something went wrong while creating program!"
          )
       );
    }

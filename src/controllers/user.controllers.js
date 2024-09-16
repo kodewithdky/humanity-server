@@ -30,7 +30,7 @@ const changeUserPassword = asyncHandler(async (req, res, next) => {
       return next(
          new ApiError(
             StatusCodes.BAD_REQUEST,
-            "New password and confirm password does not math!"
+            "New password and confirm password does not match!"
          )
       );
    }
@@ -38,7 +38,7 @@ const changeUserPassword = asyncHandler(async (req, res, next) => {
    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
    if (!isPasswordCorrect) {
       return next(
-         new ApiError(StatusCodes.UNAUTHORIZED, "Invalid credentils!")
+         new ApiError(StatusCodes.UNAUTHORIZED, "Invalid credentials!")
       );
    }
    user.password = newPassword;

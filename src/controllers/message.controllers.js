@@ -16,7 +16,7 @@ const sendMessage = asyncHandler(async (req, res, next) => {
    return res
       .status(StatusCodes.OK)
       .json(
-         new ApiResponse(StatusCodes.OK, data, "message send successfully!")
+         new ApiResponse(StatusCodes.OK, data, "Message send successfully!")
       );
 });
 
