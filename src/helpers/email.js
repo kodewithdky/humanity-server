@@ -22,7 +22,7 @@ const sendVerificationMail = (name, email, userId) => {
          html:
             "<p>HI! " +
             name +
-            ', Please click here to <a href="http://localhost:7071/api/v1/auth/verify?id=' +
+            ', Please click here to <a href="https://namaskarhumanity.org//auth/verify?id=' +
             userId +
             '" target="_blank">Verify </a> your email. </p>',
       };
