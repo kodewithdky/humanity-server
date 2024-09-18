@@ -124,25 +124,6 @@ const updateVolunteerDetails = asyncHandler(async (req, res, next) => {
       qualification,
       skills,
    } = req.body;
-   if (
-      !name ||
-      !email ||
-      !phone ||
-      !gender ||
-      !fname ||
-      !mname ||
-      !dob ||
-      !address ||
-      !city ||
-      !state ||
-      !pincode ||
-      !qualification ||
-      !skills
-   ) {
-      return next(
-         new ApiError(StatusCodes.BAD_REQUEST, "All fields required!")
-      );
-   }
    let avatarLocalPath;
    if (
       req.files &&
@@ -150,10 +131,6 @@ const updateVolunteerDetails = asyncHandler(async (req, res, next) => {
       req.files.avatar.length > 0
    ) {
       avatarLocalPath = req.files?.avatar[0]?.path;
-   }
-   if (!avatarLocalPath) {
-      fs.unlinkSync(avatarLocalPath);
-      return next(new ApiError(StatusCodes.CONFLICT, "Please select file!"));
    }
    let avatar;
    if (avatarLocalPath) {
@@ -168,20 +145,23 @@ const updateVolunteerDetails = asyncHandler(async (req, res, next) => {
       { _id: id },
       {
          $set: {
-            avatar: { public_id: avatar?.public_id, url: avatar?.secure_url },
-            name,
-            email,
-            phone,
-            gender,
-            fname,
-            mname,
-            dob,
-            address,
-            city,
-            state,
-            pincode,
-            qualification,
-            skills,
+            avatar: {
+               public_id: avatar?.public_id || volunteer.avatar.public_id,
+               url: avatar?.secure_url || volunteer.avatar.url,
+            },
+            name: name || volunteer.name,
+            email: email || volunteer.email,
+            phone: phone || volunteer.phone,
+            gender: gender || volunteer.gender,
+            fname: fname || volunteer.fname,
+            mname: mname || volunteer.mname,
+            dob: dob || volunteer.dob,
+            address: address || volunteer.address,
+            city: city || volunteer.city,
+            state: state || volunteer.state,
+            pincode: pincode || volunteer.pincode,
+            qualification: qualification || volunteer.qualification,
+            skills: skills || volunteer.skills,
          },
       },
       { new: true }
