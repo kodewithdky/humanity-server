@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { joinus, verify } from "../controllers/payment.controllers.js";
+import { payment, verify } from "../controllers/payment.controllers.js";
 
 const router = Router();
 
 //joinus
-router.route("/join-us").post(joinus);
+router.route("/donate").post(payment);
 //verify
 router.route("/verify").post(verify);
 export default router;

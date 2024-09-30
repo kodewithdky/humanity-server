@@ -62,7 +62,7 @@ const signup = asyncHandler(async (req, res, next) => {
          new ApiResponse(
             StatusCodes.CREATED,
             createdUser,
-            "User registered successfully! Please verify your email."
+            "Registration successfull! Please verify your email."
          )
       );
 });

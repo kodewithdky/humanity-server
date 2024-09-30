@@ -187,7 +187,7 @@ const getPayments = asyncHandler(async (req, res, next) => {
    if (req.query.page) {
       page = req.query.page;
    }
-   const limit = 20;
+   const limit = 6;
    const payments = await Payment.find({
       __v: 0,
       $or: [

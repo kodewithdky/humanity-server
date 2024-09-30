@@ -7,21 +7,20 @@ import ApiError from "../middlewares/error.middleware.js";
 import { Payment } from "../models/paymet.model.js";
 
 const razorpayInstance = new Razorpay({
-   key_id: "process.env.RAZORPAY_KEY_ID",
-   key_secret: "process.env.RAZORPAY_SECRET",
+   key_id: process.env.RAZORPAY_KEY_ID,
+   key_secret: process.env.RAZORPAY_SECRET,
 });
 
 //joinus
-const joinus = asyncHandler(async (req, res, next) => {
+const payment = asyncHandler(async (req, res, next) => {
    const { amount } = req.body;
-
+   const { name, phone, email, address, pancard, purpose } = req.body;
    const options = {
       amount: Number(amount * 100),
       currency: "INR",
       receipt: crypto.randomBytes(10).toString("hex"),
    };
-
-   razorpayInstance.orders.create(options, (error, order) => {
+   razorpayInstance.orders.create(options, (error, donation) => {
       if (error) {
          return next(
             new ApiError(
@@ -30,52 +29,56 @@ const joinus = asyncHandler(async (req, res, next) => {
             )
          );
       }
-      return res
-         .status(StatusCodes.OK)
-         .json(
-            new ApiResponse(
-               StatusCodes.OK,
-               { data: order },
-               "User become joinus successfully!"
-            )
-         );
+      return res.status(StatusCodes.OK).json(
+         new ApiResponse(
+            StatusCodes.OK,
+            {
+               donation,
+               name,
+               phone,
+               email,
+               address,
+               pancard,
+               purpose,
+               amount,
+            },
+            ""
+         )
+      );
    });
 });
 
 //verify
 const verify = asyncHandler(async (req, res, next) => {
-   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+   const { razorpay_order_id, razorpay_payment_id, razorpay_signature, data } =
       req.body;
-
    // Create Sign
    const sign = razorpay_order_id + "|" + razorpay_payment_id;
-
    // Create ExpectedSign
    const expectedSign = crypto
       .createHmac("sha256", process.env.RAZORPAY_SECRET)
       .update(sign.toString())
       .digest("hex");
-
-   // console.log(razorpay_signature === expectedSign);
-
    // Create isAuthentic
    const isAuthentic = expectedSign === razorpay_signature;
-
    // Condition
    if (isAuthentic) {
       const payment = new Payment({
+         name: data.name,
+         email: data.email,
+         phone: data.phone,
+         pancard: data.pancard,
+         address: data.address,
+         purpose: data.purpose,
+         amount: data.amount,
          razorpay_order_id,
          razorpay_payment_id,
          razorpay_signature,
       });
-
-      // Save Payment
       await payment.save();
-
-      // Send Message
       res.json({
-         message: "Payement Successfully",
+         message: "Payement Successfull!",
       });
    }
 });
-export { joinus, verify };
+export { payment, verify };
