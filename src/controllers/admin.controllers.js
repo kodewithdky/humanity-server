@@ -183,11 +183,6 @@ const getPayments = asyncHandler(async (req, res, next) => {
    if (req.query.search) {
       search = req.query.search;
    }
-   let page = 1;
-   if (req.query.page) {
-      page = req.query.page;
-   }
-   const limit = 6;
    const payments = await Payment.find({
       __v: 0,
       $or: [
@@ -195,23 +190,10 @@ const getPayments = asyncHandler(async (req, res, next) => {
          { email: { $regex: ".*" + search + ".*", $options: "i" } },
          { mobile: { $regex: ".*" + search + ".*", $options: "i" } },
       ],
-   })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .exec();
-   const count = await Payment.find({
-      __v: 0,
-      $or: [
-         { name: { $regex: ".*" + search + ".*", $options: "i" } },
-         { email: { $regex: ".*" + search + ".*", $options: "i" } },
-         { mobile: { $regex: ".*" + search + ".*", $options: "i" } },
-      ],
-   }).countDocuments();
+   });
    return res.status(StatusCodes.OK).json(
       new ApiResponse(StatusCodes.OK, {
          payments,
-         totalPages: Math.ceil(count / limit),
-         currentPage: page,
       })
    );
 });

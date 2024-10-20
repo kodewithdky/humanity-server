@@ -235,7 +235,7 @@ const sendOTP = asyncHandler(async (req, res, next) => {
    if (!user) {
       return next(new ApiError(StatusCodes.UNAUTHORIZED, "Invalid email!"));
    }
-   const otp = Math.floor(1000 + Math.random() * 9000);
+   const otp = Math.floor(100000 + Math.random() * 900000);
    await User.updateOne({ email }, { $set: { otp: otp } });
    sendOtpOnMail(email, otp);
    return res
